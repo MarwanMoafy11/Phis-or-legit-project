@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cyber Quiz — لعبة كشف التصيّد 🎯</title>
+  <title>Cyber Quiz 🎯 — Spot the Phish!</title>
   <style>
-    body{font-family: Arial, "Noto Naskh Arabic", sans-serif;direction:rtl;padding:24px;background:#f5f7fb}
+    body{font-family: Arial, sans-serif;direction:ltr;padding:24px;background:#f5f7fb}
     .card{background:#fff;border-radius:10px;padding:18px;margin:12px 0;box-shadow:0 6px 18px rgba(20,30,60,0.08)}
     h1{margin:0 0 12px;font-size:24px}
     .meta{color:#666;font-size:14px;margin-bottom:10px}
@@ -25,8 +25,8 @@
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
-        <h1>Cyber Quiz 🎮 — هل تعرف تمسك الهكر؟</h1>
-        <div class="meta">قدامك 20 ثانية لكل إيميل. فكّر، حلّل، وشوف لو الهكر قدر يخدعك ولا لأ </div>
+        <h1>Cyber Quiz 🎮 — Can You Outsmart the Hacker?</h1>
+        <div class="meta">You’ve got 20 seconds per email. Think fast, analyze smart, and see if the hacker can fool you 😏</div>
       </div>
       <div>
         <span class="timer" id="timer">20s</span>
@@ -56,22 +56,22 @@
     </div>
 
     <div style="margin-top:14px;color:#444;font-size:14px">
-      💡 نصيحة: ابص على الدومين، اللينك، والأسلوب في الكلام — لو فيه استعجال أو رابط غريب، غالبًا فيه مصيبة 😂
+      💡 Tip: Always double-check the domain, the link, and the tone — if it sounds urgent or sketchy, it’s probably sus 😬
     </div>
   </div>
 
 <script>
 const dataset = [
-  {sender:"billing@paypal-secure.com",subject:"Important: Update your account information",body:"Verify now: http://paypal.verify-login.example.com",tags:["fake domain","urgency"],isPhish:true,explain:"الرابط مش دومين Paypal الرسمي وبيحاول يخوفك بسرعة."},
-  {sender:"support@appleid.com",subject:"Your Apple ID has been locked",body:"We detected login attempts from China. Unlock now: https://appleid.apple.com/reset",tags:["official link"],isPhish:false,explain:"الرابط تابع للمجال الرسمي apple.com."},
-  {sender:"it@company-secure-login.net",subject:"Password reset required immediately",body:"Reset your password here: http://company-secure-login.net/reset",tags:["external link"],isPhish:true,explain:"الدومين مش تابع للشركة."},
-  {sender:"noreply@dropboxmail.com",subject:"Someone shared a file with you",body:"John shared 'ProjectPlan.pdf' with you: https://www.dropbox.com/s/xyz123",tags:["legit link"],isPhish:false,explain:"رابط رسمي من dropbox.com."},
-  {sender:"admin@university-secure.edu",subject:"Campus security update",body:"Please log in: http://university-secure.edu-login.net",tags:["domain mismatch"],isPhish:true,explain:"الدومين فيه .edu-login.net مش .edu الأصلي."},
-  {sender:"support@amazon.com",subject:"Unusual login detected",body:"If not you, secure your account at https://www.amazon.com/ap/signin",tags:["legit domain"],isPhish:false,explain:"الرابط amazon.com رسمي."},
-  {sender:"info@micros0ft-support.com",subject:"Windows license expired",body:"Reactivate now: http://micros0ft-support.com/verify",tags:["fake domain"],isPhish:true,explain:"حرف 0 بدل o — دومين مزيف."},
-  {sender:"charity@help-kids.org",subject:"Urgent donation needed",body:"Donate here: http://helpkids-donate.example.org",tags:["emotional manipulation"],isPhish:true,explain:"بيحاول يستغل العواطف لرابط مش موثوق."},
-  {sender:"newsletter@github.com",subject:"Weekly developer digest",body:"Here’s what’s new this week on GitHub.",tags:["newsletter"],isPhish:false,explain:"مرسل رسمي من github.com."},
-  {sender:"finance@company.com",subject:"Payment confirmation - Invoice #4571",body:"Attached is your payment receipt for review.",tags:["attachment"],isPhish:true,explain:"مرفق غير متوقع من جهة مالية — احتمال تصيّد."}
+  {sender:"billing@paypal-secure.com",subject:"Important: Update your account information",body:"Verify now: http://paypal.verify-login.example.com",tags:["fake domain","urgency"],isPhish:true,explain:"The link isn't an official PayPal domain and it's trying to rush you."},
+  {sender:"support@appleid.com",subject:"Your Apple ID has been locked",body:"We detected login attempts from China. Unlock now: https://appleid.apple.com/reset",tags:["official link"],isPhish:false,explain:"The link belongs to apple.com — it's legit."},
+  {sender:"it@company-secure-login.net",subject:"Password reset required immediately",body:"Reset your password here: http://company-secure-login.net/reset",tags:["external link"],isPhish:true,explain:"Domain doesn’t belong to the company. It’s fake."},
+  {sender:"noreply@dropboxmail.com",subject:"Someone shared a file with you",body:"John shared 'ProjectPlan.pdf' with you: https://www.dropbox.com/s/xyz123",tags:["legit link"],isPhish:false,explain:"Official Dropbox domain."},
+  {sender:"admin@university-secure.edu",subject:"Campus security update",body:"Please log in: http://university-secure.edu-login.net",tags:["domain mismatch"],isPhish:true,explain:".edu-login.net is NOT the same as .edu — it’s a trick."},
+  {sender:"support@amazon.com",subject:"Unusual login detected",body:"If not you, secure your account at https://www.amazon.com/ap/signin",tags:["legit domain"],isPhish:false,explain:"Real Amazon domain."},
+  {sender:"info@micros0ft-support.com",subject:"Windows license expired",body:"Reactivate now: http://micros0ft-support.com/verify",tags:["fake domain"],isPhish:true,explain:"The '0' instead of 'o' gives it away — fake domain."},
+  {sender:"charity@help-kids.org",subject:"Urgent donation needed",body:"Donate here: http://helpkids-donate.example.org",tags:["emotional manipulation"],isPhish:true,explain:"Tries to play on your emotions with a sketchy link."},
+  {sender:"newsletter@github.com",subject:"Weekly developer digest",body:"Here’s what’s new this week on GitHub.",tags:["newsletter"],isPhish:false,explain:"Official GitHub newsletter."},
+  {sender:"finance@company.com",subject:"Payment confirmation - Invoice #4571",body:"Attached is your payment receipt for review.",tags:["attachment"],isPhish:true,explain:"Unexpected attachment from finance — suspicious."}
 ];
 
 let idx = 0, score = 0, timer = 20, timerInterval;
@@ -86,7 +86,7 @@ function startTimer(){
     if(timer <= 0){
       clearInterval(timerInterval);
       document.getElementById('explain').style.display = 'block';
-      document.getElementById('explain').innerHTML = "⏰ الوقت خلص يا كبير! خسرنا الجولة دي 😂";
+      document.getElementById('explain').innerHTML = "⏰ Time’s up, hacker boy! You missed that one 😂";
       score -= 5; if(score<0) score=0;
       document.getElementById('score').innerText = 'Score: ' + score;
     }
@@ -99,10 +99,10 @@ function render(i){
   document.getElementById('subject').innerText = "Subject: " + e.subject;
   document.getElementById('body').innerText = e.body;
   document.getElementById('indList').innerText = e.tags.join(', ');
-  document.getElementById('senderTag').innerText = (e.isPhish ? 'مشتبه' : 'مأمون');
+  document.getElementById('senderTag').innerText = (e.isPhish ? 'Suspicious' : 'Legit');
   document.getElementById('explain').style.display = 'none';
   document.getElementById('score').innerText = 'Score: ' + score;
-  document.getElementById('counter').innerText = `السؤال ${i + 1} من ${dataset.length}`;
+  document.getElementById('counter').innerText = `Email ${i + 1} of ${dataset.length}`;
   startTimer();
 }
 
@@ -112,19 +112,19 @@ function answer(chosenPhish){
   const correct = (e.isPhish === chosenPhish);
 
   const rightJokes = [
-    " يمزاجك يكبير",
-    " استر يا دولي ",
-    "هو هو الهرم الرابع يعم !",
-    "دماغ الماظ",
-    "اسطورة!"
+    "🔥 Brain on fire, bro!",
+    "😎 Hacker who? You’re a beast!",
+    "💪 You got that cyber vision!",
+    "🧠 Big brain energy right there!",
+    "🚀 You’re built different!"
   ];
 
   const wrongJokes = [
-    "طب بالله عليك انت مقتنع ؟",
-    "وحشه منك دي",
-    "ايه يكبير اللي بتعمله ده؟",
-    "مقبوله منك يكبير",
-    " اللي تشوفه يعم"
+    "😂 Bruh... you really fell for that?",
+    "😅 C’mon dude, that was obvious!",
+    "🤯 The hacker’s laughing right now!",
+    "🙈 Oof, you just clicked the trap!",
+    "💀 RIP... the hacker says thanks!"
   ];
 
   const rightGIFs = [
@@ -156,17 +156,17 @@ function answer(chosenPhish){
   if(correct){
     score += 10;
     explainDiv.innerHTML = `
-      ✅ <b>صح!</b> ${e.explain}
+      ✅ <b>Correct!</b> ${e.explain}
       <br><br><b style="font-size:16px">${msg}</b>
       <br><br><img src="${gif}" style="max-width:100%;border-radius:12px;margin-top:8px">
     `;
   } else {
     score -= 5; if(score<0) score=0;
     explainDiv.innerHTML = `
-      ❌ <b>غلط!</b><br><br>
+      ❌ <b>Wrong!</b><br><br>
       <b style="font-size:16px">${msg}</b><br><br>
-      <b>ليه دي غلط؟</b><br>${e.explain}<br><br>
-      <b>نصيحة:</b> راقب الدومين واللينك قبل ما تضغط.<br><br>
+      <b>Why is this wrong?</b><br>${e.explain}<br><br>
+      <b>Quick tip:</b> Always check the domain before clicking anything.<br><br>
       <img src="${gif}" style="max-width:100%;border-radius:12px;margin-top:8px">
     `;
   }
@@ -179,15 +179,15 @@ function nextEmail(){
   idx++;
   if(idx >= dataset.length){
     let msg;
-    if(score >= 80) msg = " مولّعها! انت رسمي هكر!";
-    else if(score >= 50) msg = " الاسكور ده ينزلك سامر مستريح";
-   
+    if(score >= 80) msg = "🔥 You’re a certified Cyber King!";
+    else if(score >= 50) msg = "😎 Not bad! You’ve got potential.";
+    else msg = "😂 Bro... the hacker just won this round.";
 
     document.getElementById('emailArea').innerHTML = `
-      <h2>🎉 خلصت التدريب!</h2>
-      <h3>سكورك النهائي: <span style="color:#1e88e5">${score}</span></h3>
+      <h2>🎉 Training Complete!</h2>
+      <h3>Final Score: <span style="color:#1e88e5">${score}</span></h3>
       <p>${msg}</p>
-      <button style="padding:10px 16px;border-radius:8px;background:#4caf50;color:white;font-weight:bold" onclick="restart()">العب تاني 🔁</button>
+      <button style="padding:10px 16px;border-radius:8px;background:#4caf50;color:white;font-weight:bold" onclick="restart()">Play Again 🔁</button>
     `;
   } else {
     render(idx);
