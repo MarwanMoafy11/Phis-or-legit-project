@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Phish or Legit? — Advanced Trainer</title>
+  <title>Cyber Quiz — لعبة كشف التصيّد 🎯</title>
   <style>
     body{font-family: Arial, "Noto Naskh Arabic", sans-serif;direction:rtl;padding:24px;background:#f5f7fb}
     .card{background:#fff;border-radius:10px;padding:18px;margin:12px 0;box-shadow:0 6px 18px rgba(20,30,60,0.08)}
@@ -16,17 +16,17 @@
     .legit{background:#4caf50;color:white}
     .explain{margin-top:12px;color:#222;background:#fffef8;padding:10px;border-radius:8px;border:1px dashed #f2dca6}
     .score{float:left;background:#1e88e5;color:#fff;padding:8px 12px;border-radius:20px;font-weight:700}
+    .timer{float:right;background:#f57c00;color:#fff;padding:8px 12px;border-radius:20px;font-weight:700}
     .indicator{margin-top:8px;font-size:13px;color:#444}
     .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef5ff;margin-left:6px;font-size:12px}
-    .timer{float:right;background:#f57c00;color:#fff;padding:8px 12px;border-radius:20px;font-weight:700}
   </style>
 </head>
 <body>
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
-        <h1>Phish or Legit? — Advanced Trainer</h1>
-        <div class="meta">اختبر مهارتك في كشف رسائل التصيّد! أمامك 20 ثانية لكل رسالة.</div>
+        <h1>Cyber Quiz 🎮 — هل تعرف تمسك الهكر؟</h1>
+        <div class="meta">قدامك 20 ثانية لكل إيميل. فكّر، حلّل، وشوف لو الهكر قدر يخدعك ولا لأ </div>
       </div>
       <div>
         <span class="timer" id="timer">20s</span>
@@ -56,98 +56,25 @@
     </div>
 
     <div style="margin-top:14px;color:#444;font-size:14px">
-      نصيحة: لا تثق في أي رابط أو ملف مرفق إلا لو كنت متأكد من المرسل. فحص التفاصيل دائماً!
+      💡 نصيحة: ابص على الدومين، اللينك، والأسلوب في الكلام — لو فيه استعجال أو رابط غريب، غالبًا فيه مصيبة 😂
     </div>
   </div>
 
 <script>
 const dataset = [
-  {
-    sender: "billing@paypal-secure.com",
-    subject: "Important: Update your account information",
-    body: "We noticed unusual activity on your account. Verify now: http://paypal.verify-login.example.com",
-    tags: ["fake domain","urgency"],
-    isPhish: true,
-    explain: "الرابط مش دومين Paypal الرسمي وبيحاول يعمل استعجال."
-  },
-  {
-    sender: "support@appleid.com",
-    subject: "Your Apple ID has been locked",
-    body: "We detected login attempts from China. Unlock now: https://appleid.apple.com/reset",
-    tags: ["official link","security notice"],
-    isPhish: false,
-    explain: "الرابط تابع للمجال الرسمي apple.com ولا يوجد إشارات تصيّد."
-  },
-  {
-    sender: "it-department@company-secure-login.net",
-    subject: "Password reset required immediately",
-    body: "To keep your access, reset your password here: http://company-secure-login.net/reset",
-    tags: ["external link","urgency"],
-    isPhish: true,
-    explain: "الرابط مش دومين الشركة الحقيقي — دومين خارجي مشبوه."
-  },
-  {
-    sender: "noreply@dropboxmail.com",
-    subject: "Someone shared a file with you",
-    body: "John shared 'ProjectPlan.pdf' with you: https://www.dropbox.com/s/xyz123",
-    tags: ["legit link","shared file"],
-    isPhish: false,
-    explain: "دومين dropbox.com حقيقي ومضمون."
-  },
-  {
-    sender: "admin@university-secure.edu",
-    subject: "Campus security update",
-    body: "Please log in to confirm your account before Monday: http://university-secure.edu-login.net",
-    tags: ["domain mismatch","deadline"],
-    isPhish: true,
-    explain: "الدومين فيه hyphen ومش تابع للمجال .edu الأصلي."
-  },
-  {
-    sender: "support@amazon.com",
-    subject: "Unusual login detected",
-    body: "We noticed a login from a new device. If it wasn't you, secure your account at https://www.amazon.com/ap/signin",
-    tags: ["legit domain","security alert"],
-    isPhish: false,
-    explain: "الرابط amazon.com رسمي ومضمون."
-  },
-  {
-    sender: "info@micros0ft-support.com",
-    subject: "Windows license expired",
-    body: "Reactivate now: http://micros0ft-support.com/verify",
-    tags: ["fake domain","0 instead of o"],
-    isPhish: true,
-    explain: "استبدال حرف o بـ 0 في micros0ft — خدعة شائعة."
-  },
-  {
-    sender: "charity@help-kids.org",
-    subject: "Urgent donation needed",
-    body: "Donate here: http://helpkids-donate.example.org",
-    tags: ["emotional manipulation","unverified link"],
-    isPhish: true,
-    explain: "استغلال عاطفي + دومين غير موثوق."
-  },
-  {
-    sender: "newsletter@github.com",
-    subject: "Weekly developer digest",
-    body: "Here’s what’s new this week on GitHub.",
-    tags: ["newsletter","official sender"],
-    isPhish: false,
-    explain: "مرسل رسمي من github.com، لا روابط غريبة."
-  },
-  {
-    sender: "finance@company.com",
-    subject: "Payment confirmation - Invoice #4571",
-    body: "Attached is your payment receipt for review.",
-    tags: ["attachment","finance"],
-    isPhish: true,
-    explain: "مرفق غير متوقع من جهة مالية — احتمال تصيّد."
-  }
+  {sender:"billing@paypal-secure.com",subject:"Important: Update your account information",body:"Verify now: http://paypal.verify-login.example.com",tags:["fake domain","urgency"],isPhish:true,explain:"الرابط مش دومين Paypal الرسمي وبيحاول يخوفك بسرعة."},
+  {sender:"support@appleid.com",subject:"Your Apple ID has been locked",body:"We detected login attempts from China. Unlock now: https://appleid.apple.com/reset",tags:["official link"],isPhish:false,explain:"الرابط تابع للمجال الرسمي apple.com."},
+  {sender:"it@company-secure-login.net",subject:"Password reset required immediately",body:"Reset your password here: http://company-secure-login.net/reset",tags:["external link"],isPhish:true,explain:"الدومين مش تابع للشركة."},
+  {sender:"noreply@dropboxmail.com",subject:"Someone shared a file with you",body:"John shared 'ProjectPlan.pdf' with you: https://www.dropbox.com/s/xyz123",tags:["legit link"],isPhish:false,explain:"رابط رسمي من dropbox.com."},
+  {sender:"admin@university-secure.edu",subject:"Campus security update",body:"Please log in: http://university-secure.edu-login.net",tags:["domain mismatch"],isPhish:true,explain:"الدومين فيه .edu-login.net مش .edu الأصلي."},
+  {sender:"support@amazon.com",subject:"Unusual login detected",body:"If not you, secure your account at https://www.amazon.com/ap/signin",tags:["legit domain"],isPhish:false,explain:"الرابط amazon.com رسمي."},
+  {sender:"info@micros0ft-support.com",subject:"Windows license expired",body:"Reactivate now: http://micros0ft-support.com/verify",tags:["fake domain"],isPhish:true,explain:"حرف 0 بدل o — دومين مزيف."},
+  {sender:"charity@help-kids.org",subject:"Urgent donation needed",body:"Donate here: http://helpkids-donate.example.org",tags:["emotional manipulation"],isPhish:true,explain:"بيحاول يستغل العواطف لرابط مش موثوق."},
+  {sender:"newsletter@github.com",subject:"Weekly developer digest",body:"Here’s what’s new this week on GitHub.",tags:["newsletter"],isPhish:false,explain:"مرسل رسمي من github.com."},
+  {sender:"finance@company.com",subject:"Payment confirmation - Invoice #4571",body:"Attached is your payment receipt for review.",tags:["attachment"],isPhish:true,explain:"مرفق غير متوقع من جهة مالية — احتمال تصيّد."}
 ];
 
-let idx = 0;
-let score = 0;
-let timer = 20;
-let timerInterval;
+let idx = 0, score = 0, timer = 20, timerInterval;
 
 function startTimer(){
   clearInterval(timerInterval);
@@ -159,7 +86,7 @@ function startTimer(){
     if(timer <= 0){
       clearInterval(timerInterval);
       document.getElementById('explain').style.display = 'block';
-      document.getElementById('explain').innerHTML = "⏰ انتهى الوقت! تم اعتبار الإجابة خاطئة.";
+      document.getElementById('explain').innerHTML = "⏰ الوقت خلص يا كبير! خسرنا الجولة دي 😂";
       score -= 5; if(score<0) score=0;
       document.getElementById('score').innerText = 'Score: ' + score;
     }
@@ -183,10 +110,67 @@ function answer(chosenPhish){
   clearInterval(timerInterval);
   const e = dataset[idx];
   const correct = (e.isPhish === chosenPhish);
-  if(correct){ score += 10; }
-  else { score -= 5; if(score<0) score=0; }
-  document.getElementById('explain').style.display = 'block';
-  document.getElementById('explain').innerHTML = (correct? "✅ صحيح! ":"❌ غلط. ") + e.explain;
+
+  const rightJokes = [
+    " يمزاجك يكبير",
+    " استر يا دولي ",
+    "هو هو الهرم الرابع يعم !",
+    "دماغ الماظ",
+    "اسطورة!"
+  ];
+
+  const wrongJokes = [
+    "طب بالله عليك انت مقتنع ؟",
+    "وحشه منك دي",
+    "ايه يكبير اللي بتعمله ده؟",
+    "مقبوله منك يكبير",
+    " اللي تشوفه يعم"
+  ];
+
+  const rightGIFs = [
+    "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3a3Y5N202ZWZ5Mng3NHRnZzNta2lwY2h5dHV5czVuaXlocjhqaDRwZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/NEvPzZ8bd1V4Y/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmhhMWlxeGlqMHE3bTBrM3hvbDU2cGJmaWxvcGZ4NTltNzJyZjlpMyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WiM5K1e9MtEic/giphy.gif",
+    "https://media.giphy.com/media/fxsqOYnIMEefC/giphy.gif"
+  ];
+
+  const wrongGIFs = [
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmE5a2xvMzd1c3JtNno3OTFmN2YwcWh5dWpkbnM4cGYyZHdoc24wdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/QBd2kLB5qDmysEXre9/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmE5a2xvMzd1c3JtNno3OTFmN2YwcWh5dWpkbnM4cGYyZHdoc24wdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/FY8c5SKwiNf1EtZKGs/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmE5a2xvMzd1c3JtNno3OTFmN2YwcWh5dWpkbnM4cGYyZHdoc24wdSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/t9ctG5MZhyyU8/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3djlyZG44bmliNGplOXpxbHB6aXRoNGxvdzN6Y2c5d3ljZ3d3dmI2YiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/14aUO0Mf7dWDXW/giphy.gif"
+  ];
+
+  const msg = correct 
+    ? rightJokes[Math.floor(Math.random() * rightJokes.length)]
+    : wrongJokes[Math.floor(Math.random() * wrongJokes.length)];
+  const gif = correct 
+    ? rightGIFs[Math.floor(Math.random() * rightGIFs.length)]
+    : wrongGIFs[Math.floor(Math.random() * wrongGIFs.length)];
+
+  const explainDiv = document.getElementById('explain');
+  explainDiv.style.display = 'block';
+  explainDiv.style.background = correct ? '#eaffea' : '#ffeaea';
+  explainDiv.style.border = correct ? '2px solid #4caf50' : '2px dashed #ff6b6b';
+
+  if(correct){
+    score += 10;
+    explainDiv.innerHTML = `
+      ✅ <b>صح!</b> ${e.explain}
+      <br><br><b style="font-size:16px">${msg}</b>
+      <br><br><img src="${gif}" style="max-width:100%;border-radius:12px;margin-top:8px">
+    `;
+  } else {
+    score -= 5; if(score<0) score=0;
+    explainDiv.innerHTML = `
+      ❌ <b>غلط!</b><br><br>
+      <b style="font-size:16px">${msg}</b><br><br>
+      <b>ليه دي غلط؟</b><br>${e.explain}<br><br>
+      <b>نصيحة:</b> راقب الدومين واللينك قبل ما تضغط.<br><br>
+      <img src="${gif}" style="max-width:100%;border-radius:12px;margin-top:8px">
+    `;
+  }
+
   document.getElementById('score').innerText = 'Score: ' + score;
 }
 
@@ -194,11 +178,16 @@ function nextEmail(){
   clearInterval(timerInterval);
   idx++;
   if(idx >= dataset.length){
+    let msg;
+    if(score >= 80) msg = " مولّعها! انت رسمي هكر!";
+    else if(score >= 50) msg = " الاسكور ده ينزلك سامر مستريح";
+   
+
     document.getElementById('emailArea').innerHTML = `
-      <h2>🎉 انتهيت!</h2>
-      <p>لقد أجبت على كل ${dataset.length} الرسائل.</p>
-      <h3>النتيجة النهائية: <span style="color:#1e88e5">${score}</span></h3>
-      <button style="padding:10px 16px;border-radius:8px;background:#4caf50;color:white;font-weight:bold" onclick="restart()">إعادة التدريب</button>
+      <h2>🎉 خلصت التدريب!</h2>
+      <h3>سكورك النهائي: <span style="color:#1e88e5">${score}</span></h3>
+      <p>${msg}</p>
+      <button style="padding:10px 16px;border-radius:8px;background:#4caf50;color:white;font-weight:bold" onclick="restart()">العب تاني 🔁</button>
     `;
   } else {
     render(idx);
