@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Phish or Legit? — Interactive Email Trainer</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --good:#10b981; --bad:#ef4444; --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.03);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#071028 0%, #08142a 60%);color:#e6eef6}
+    /* layout: left column narrow, email column large and immersive */
+    .wrap{max-width:1300px;margin:20px auto;padding:18px;display:grid;grid-template-columns:320px 1fr;gap:20px}
+    .card{background:linear-gradient(180deg,var(--card), #07101a);border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(2,6,23,0.6);overflow:hidden}
+    header.site{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;margin-bottom:6px}
+    h1{font-size:20px;margin:0}
+    .meta{color:var(--muted);font-size:13px}
+
+    /* Left column: controls & score */
+    .left{display:flex;flex-direction:column;gap:14px}
+    .score{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:var(--glass)}
+    .score .number{font-size:28px;font-weight:700;color:var(--accent)}
+    .controls{display:flex;gap:10px}
+    button.btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:10px;color:inherit;cursor:pointer}
+    button.primary{background:linear-gradient(90deg,var(--accent),#7dd3fc);color:#03202a;border:none}
+    .progress{height:12px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#60a5fa);transition:width 700ms cubic-bezier(.22,.9,.35,1)}
+
+    /* Email viewer — much larger, immersive */
+    .email-view{min-height:78vh;padding:26px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+    .headers{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+    .from{font-weight:800;font-size:18px}
+    .subject{font-size:22px;margin:6px 0}
+    .meta-row{font-size:14px;color:var(--muted)}
+    .body{background:rgba(255,255,255,0.02);padding:20px;border-radius:12px;color:#dbeafe;line-height:1.7;font-size:16px;white-space:pre-wrap;box-shadow:0 6px 20px rgba(2,6,23,0.6);max-height:60vh;overflow:auto}
+
+    .attachments{margin-top:16px;display:flex;gap:10px}
+    .attachment{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);display:flex;gap:10px;align-items:center;cursor:pointer}
+    .attachment small{color:var(--muted)}
+
+    /* Answer area */
+    .actions{display:flex;gap:12px;margin-top:18px}
+    .explain{margin-top:16px;padding:14px;border-radius:12px;background:linear-gradient(180deg,#021826,transparent)}
+    .explain.good{border-left:6px solid var(--good)}
+    .explain.bad{border-left:6px solid var(--bad)}
+
+    /* animated feedback overlay */
+    .float-msg{position:fixed;right:34px;bottom:34px;padding:14px 18px;border-radius:12px;background:#052024;color:#bff7ef;box-shadow:0 12px 40px rgba(2,6,23,0.6);transform:translateY(20px) scale(.98);opacity:0;transition:all 420ms ease;z-index:60}
+    .float-msg.show{opacity:1;transform:none}
+
+    .controls-top{display:flex;gap:8px;align-items:center}
+    select{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:inherit}
+
+    .link-preview{margin-top:12px;font-size:14px;color:var(--muted)}
+
+    /* responsiveness */
+    @media (max-width:980px){.wrap{grid-template-columns:1fr;margin:12px;padding:8px}.left{order:2}.email-view{min-height:60vh;padding:16px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="site">
+      <div>
+        <h1>Phish or Legit? — Interactive Email Trainer</h1>
+        <div class="meta">Practice spotting advanced phishing emails — take your time to inspect each message</div>
+      </div>
+      <div class="meta">Round <span id="roundNum">0</span> / <span id="totalRounds">20</span></div>
+    </header>
+
+    <div class="card left">
+      <div class="score">
+        <div>
+          <div style="font-size:12px;color:var(--muted)">Score</div>
+          <div class="number" id="score">0</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:var(--muted)">Streak</div>
+          <div id="streak">0</div>
+        </div>
+      </div>
+
+      <div class="card" style="background:transparent;border:none;padding:0">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Progress</div>
+        <div class="progress"><i id="progFill"></i></div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-direction:column">
+        <div style="font-size:13px;color:var(--muted)">Controls</div>
+        <div class="controls">
+          <button class="btn" id="btnRestart">Restart</button>
+          <button class="btn" id="btnShowAnswer">Show Answer</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;font-size:13px;color:var(--muted)">
+        Tip: take your time — the system waits until you press "Next" to proceed.
+      </div>
+
+    </div>
+
+    <div class="card">
+      <div class="email-view" id="emailView">
+        <div class="headers">
+          <div class="from" id="emailFrom">From: —</div>
+          <div class="subject" id="emailSubject">Subject: —</div>
+          <div class="meta-row" id="emailMeta">To: you@example.com | Date: —</div>
+        </div>
+        <div class="body" id="emailBody">Press <strong>Phish</strong> or <strong>Legit</strong> when ready.</div>
+
+        <div class="attachments" id="attachments"></div>
+        <div class="link-preview" id="linkPreview" hidden>Hover links to preview target</div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnLegit">Legit</button>
+          <button class="btn" id="btnPhish" style="border-color:var(--bad);">Phish</button>
+          <button class="btn" id="btnNext" style="margin-left:auto;" disabled>Next</button>
+        </div>
+
+        <div id="explain" class="explain" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="floatMsg" class="float-msg">Nice — +10 points!</div>
+
+  <script>
+    // small helper: simple SVG logo generator (returns inline SVG string)
+    function svgLogo(text, bg='#0b74d9'){
+      const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="40"><rect width="100%" height="100%" rx="6" fill="${bg}"/><text x="12" y="26" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff">${safe}</text></svg>`;
+    }
+
+    // ----- Data and state -----
+    // 20 detailed emails — sequential. 5 of them are legitimate (isPhish: false), rest are phishing.
+    const EMAILS = [
+      { id:'e01', from:'Fraud Alerts <alerts@yourbank-payments.com>', to:'you@company.com', date:'2025-10-20 08:15 UTC', subject:'Urgent: Unusual transaction detected — review immediately', body:`${svgLogo('YourBank Payments', '#0b74d9')}<br><br>Dear Valued Customer,<br><br>We detected an unusual transaction on your corporate card ending **-2211** at 04:12 UTC. The charge was for <strong>US$2,450.00</strong> to "TechSupplies Ltd." If you did not authorize this transaction please verify your identity and cancel the charge by visiting:<br><br><a href="https://yourbank-payments.com/secure/verify?ref=TX2211abcd">https://yourbank-payments.com/secure/verify?ref=TX2211abcd</a><br><br>For your security we have temporarily limited card usage. Call +44 20 7123 4567 if you prefer to verify by phone.<br><br>Sincerely,<br>Fraud Prevention — YourBank Payments`, attachments:[{name:'transaction_receipt_2211.pdf', size:'132 KB'}], isPhish:true, explanation:`Phishing indicators: lookalike domain and urgent language; verify via official bank portal or known phone number, not the link.` },
+
+      // LEGIT: internal HR announcement with logo and attachments
+      { id:'e02', from:'HR <hr@company.com>', to:'you@company.com', date:'2025-10-21 10:40 UTC', subject:'Updated staff handbook and payroll schedule', body:`${svgLogo('Acme Corp HR', '#0a9d58')}<br><br>Hi Marwan,<br><br>Please find attached the updated Staff Handbook (effective Nov 1) and this year's payroll calendar. These changes include updated remote-work policies and instructions for submitting direct-deposit updates via the official employee portal. We will host a live Q&A on Monday, Nov 3 at 10:00 (Teams link included in the intranet post).<br><br>Attachments:<br>- Staff_Handbook_v3.pdf (210 KB)<br>- Payroll_Calendar_2026.xlsx (48 KB)<br><br>Regards,<br>Sara Ahmed — HR Operations`, attachments:[{name:'Staff_Handbook_v3.pdf', size:'210 KB'},{name:'Payroll_Calendar_2026.xlsx', size:'48 KB'}], isPhish:false, explanation:`Legitimate internal HR announcement. Sender uses the company domain and references internal channels. Always use the intranet/HR portal for sensitive updates.` },
+
+      { id:'e03', from:'Microsoft Accounts <security-noreply@microsoft-support.net>', to:'you@outlook.com', date:'2025-10-22 06:09 UTC', subject:'Security alert: New device signed in — review and secure', body:`${svgLogo('Microsoft Security', '#0067b8')}<br><br>Hello Marwan,<br><br>We detected a sign-in from a new device in Ankara, Turkey. If this was you confirm; otherwise secure your account here:<br><br><a href="https://microsoft-account-security.com/review?token=8a7b6c">https://microsoft-account-security.com/review?token=8a7b6c</a><br><br>Device: Chrome on Windows 10 — IP: 212.58.244.22`, attachments:[], isPhish:true, explanation:`Links and domain are lookalikes; go to account.microsoft.com directly if concerned.` },
+
+      { id:'e04', from:'Payments <billing@vendorsolutions.com>', to:'you@company.com', date:'2025-10-23 14:23 UTC', subject:'Invoice INV-8890 — Payment scheduled', body:`${svgLogo('Vendor Solutions', '#5b21b6')}<br><br>Good afternoon,<br><br>This email confirms we received your remittance for invoice INV-8890 and payment is scheduled for 2025-10-25. Attached is the remittance advice and a copy of the supplier confirmation. No action required unless the payment details are incorrect.<br><br>Attachment: Remittance_INV-8890.pdf`, attachments:[{name:'Remittance_INV-8890.pdf', size:'98 KB'}], isPhish:false, explanation:`Legitimate vendor confirmation: sender domain is a known supplier domain and message references a payment you requested. Always cross-check invoice numbers in the AP system.` },
+
+      { id:'e05', from:'Apple Security <apple-security@verification.apple-id.com>', to:'you@icloud.com', date:'2025-10-24 09:01 UTC', subject:'Apple ID locked due to suspicious activity — verify now', body:`${svgLogo('Apple ID', '#000000')}<br><br>Dear Apple user,<br><br>Your Apple ID has been locked. Restore access at:<br><br><a href="http://verification.apple-id.com/login?user=you">http://verification.apple-id.com/login?user=you</a><br><br>Device: iPhone 12 Pro — Last used: 2025-10-24 08:50 UTC`, attachments:[], isPhish:true, explanation:`Uses insecure HTTP and lookalike domain; Apple uses apple.com and HTTPS.` },
+
+      { id:'e06', from:'IT Helpdesk <helpdesk@company.com>', to:'you@company.com', date:'2025-10-24 11:12 UTC', subject:'MFA provider migration — scheduled action required', body:`${svgLogo('Acme IT', '#0f1724')}<br><br>Dear colleague,<br><br>As communicated in last week's all-hands, we are migrating our MFA provider on Nov 5. To ensure uninterrupted access, please visit the internal Self-Service Portal (link on the intranet) and complete the quick re-enrollment by Nov 4. We will not request secret answers or passwords by email. If you need assistance, open a ticket via the Helpdesk portal or call extension 4521.<br><br>IT Security — Acme Corp`, attachments:[], isPhish:false, explanation:`Legitimate IT announcement referencing internal portals and established support channels. The email avoids asking for secrets in the message.` },
+
+      { id:'e07', from:'Logistics <tracking@globalpost-delivery.com>', to:'you@gmail.com', date:'2025-10-26 07:34 UTC', subject:'Delivery failed: Confirm customs information for order 338299', body:`${svgLogo('GlobalPost', '#d97706')}<br><br>Dear Customer,<br><br>Your shipment (Order 338299) is held at customs. Complete declaration here:<br><br><a href="https://globalpost-delivery.com/customs/complete?order=338299">https://globalpost-delivery.com/customs/complete?order=338299</a><br><br>Tracking ID: 338299`, attachments:[], isPhish:true, explanation:`Unexpected customs requests—always check courier's official site or contact them directly.` },
+
+      { id:'e08', from:'CEO Office <ceo-office@company.com>', to:'you@company.com', date:'2025-10-27 09:15 UTC', subject:'Confidential: Executive approval required for vendor change', body:`${svgLogo('Executive Office', '#0b1220')}<br><br>Hi,<br><br>The CEO has approved an urgent vendor substitution for Project Orion. Please open the attached document and confirm approval so finance can expedite payment.<br><br>Attachment: Vendor_Change_REQUEST.docx`, attachments:[{name:'Vendor_Change_REQUEST.docx', size:'56 KB'}], isPhish:true, explanation:`CEO impersonation is common BEC tactic—confirm by calling the CEO's office and don't enable macros in attachments.` },
+
+      { id:'e09', from:'Payroll <no-reply@payroll-notify.com>', to:'you@company.com', date:'2025-10-28 08:00 UTC', subject:'Tax information required to process your year-end compensation', body:`${svgLogo('Payroll Services', '#0ea5a4')}<br><br>Dear Employee,<br><br>Please complete the attached tax form and return it via the secure portal:<br><br><a href="https://payroll-notify.com/forms/tax2025?uid=EMP123456">https://payroll-notify.com/forms/tax2025?uid=EMP123456</a><br><br>Attachment: TaxForm_2025.pdf`, attachments:[{name:'TaxForm_2025.pdf', size:'120 KB'}], isPhish:true, explanation:`Personal tax data requests via unknown portals are suspicious—use official payroll channels.` },
+
+      { id:'e10', from:'Conference Team <events@conf-management.com>', to:'you@company.com', date:'2025-10-29 10:30 UTC', subject:'Invoice for booth reservation — urgent', body:`${svgLogo('CloudCon Events', '#075985')}<br><br>Hello,<br><br>Your booth reservation for CloudCon 2025 shows an unpaid balance. Please view invoice and pay:<br><br><a href="https://conf-management.com/payments/INV-3344">https://conf-management.com/payments/INV-3344</a><br><br>Contact events@conf-management.com`, attachments:[{name:'Invoice_INV-3344.pdf', size:'78 KB'}], isPhish:true, explanation:`Requests for payment to third-party links—verify through event organizer's official platform or invoice number in your event portal.` },
+
+      // LEGIT: vendor confirmation from well-known supplier with logo and details
+      { id:'e11', from:'Legal <legal@company.com>', to:'you@company.com', date:'2025-10-30 13:45 UTC', subject:'Confidentiality amendment — internal signature required', body:`${svgLogo('Acme Legal', '#334155')}<br><br>Dear Marwan,<br><br>The Legal team has circulated a minor confidentiality amendment to reflect new supplier clauses. Please review the attached PDF and sign using the internal DocuSign integration (link available on the intranet). This change affects Project Orion only. If you have questions, schedule a 15-minute consult with Legal: calendly.com/acme-legal/consult.<br><br>Attachment: NDA_Amendment.pdf`, attachments:[{name:'NDA_Amendment.pdf', size:'34 KB'}], isPhish:false, explanation:`Internal legal communication using company domain and internal signing services — legitimate. Always use the intranet to sign.` },
+
+      { id:'e12', from:'Vendor Support <support@cloudstorage-update.com>', to:'you@company.com', date:'2025-11-01 09:00 UTC', subject:'Storage quota exceeded — immediate action required', body:`${svgLogo('CloudStorage', '#0ea5a4')}<br><br>Hello,<br><br>Your company's cloud storage has exceeded quota. To avoid data loss upgrade plan here:<br><br><a href="https://cloudstorage-update.com/upgrade?org=COMPANY123">https://cloudstorage-update.com/upgrade?org=COMPANY123</a><br><br>Contact support if you need assistance.`, attachments:[], isPhish:true, explanation:`Fake vendor notifications asking for payment or credentials—verify via known vendor console and not an email link.` },
+
+      { id:'e13', from:'IT Admin <admin@server-maint.com>', to:'you@company.com', date:'2025-11-02 02:20 UTC', subject:'Server certificate expired — renew immediately', body:`${svgLogo('ServerMaint', '#ef4444')}<br><br>Dear Admin,<br><br>Our monitoring shows an expired SSL certificate on your primary server. Renew now to avoid downtime:<br><br><a href="https://server-maint.com/renew?server=pr-01">https://server-maint.com/renew?server=pr-01</a><br><br>Attachment: cert_report.txt`, attachments:[{name:'cert_report.txt', size:'12 KB'}], isPhish:true, explanation:`Scare tactics about server downtime; always use internal dashboards or CM DB links to manage infra.` },
+
+      { id:'e14', from:'Banking Notices <notice@bank-transactions.com>', to:'you@company.com', date:'2025-11-03 07:10 UTC', subject:'Wire transfer failed — additional verification required', body:`${svgLogo('Banking Notices', '#065f46')}<br><br>Attention Treasury Team,<br><br>A wire transfer to beneficiary "Global Supplies" failed. Re-submit verification here:<br><br><a href="https://bank-transactions.com/verify/wire?ref=WT9981">https://bank-transactions.com/verify/wire?ref=WT9981</a><br><br>Reply with confirmation for urgent processing.`, attachments:[], isPhish:true, explanation:`Payment redirection requests are classic BEC—verify beneficiary details using your payment system and known bank contacts.` },
+
+      { id:'e15', from:'Support <helpdesk@licenses.acme.com>', to:'you@company.com', date:'2025-11-04 11:50 UTC', subject:'Software license renewal notification — action scheduled', body:`${svgLogo('Acme Licensing', '#0b74d9')}<br><br>Hi,<br><br>This is a courtesy notification that your organization's license for SecureApp will expire on 2025-11-15. We have scheduled an automatic renewal using the billing method on file. If you need to change the billing account, please submit a request via the internal vendor portal. No action is required unless you prefer to change payment details.<br><br>Attachment: Renewal_Instructions.pdf`, attachments:[{name:'Renewal_Instructions.pdf', size:'46 KB'}], isPhish:false, explanation:`Legitimate vendor/internal licensing notice referencing internal payment methods and a scheduled process. Confirm changes via the vendor portal.` },
+
+      { id:'e16', from:'Recruitment <offers@headhunter-company.com>', to:'you@company.com', date:'2025-11-05 09:15 UTC', subject:'Job offer — immediate response needed', body:`${svgLogo('Headhunter Co', '#7c3aed')}<br><br>Dear Candidate,<br><br>We are delighted to offer you a senior position. To accept and set payment details, complete the form:<br><br><a href="https://headhunter-company.com/offer/accept?candidate=MARWAN">https://headhunter-company.com/offer/accept?candidate=MARWAN</a><br><br>Attachment: OfferDetails.pdf`, attachments:[{name:'OfferDetails.pdf', size:'200 KB'}], isPhish:true, explanation:`Job-offer scams ask for bank details—legitimate recruiters will not ask for bank credentials via email.` },
+
+      { id:'e17', from:'Cloud Admin <security@cloud-console.com>', to:'you@company.com', date:'2025-11-06 14:30 UTC', subject:'New console access from unknown IP — confirm', body:`${svgLogo('Cloud Console', '#0369a1')}<br><br>Hello,<br><br>There was a new admin console login from IP 91.123.45.6. If not recognized, run immediate verification:<br><br><a href="https://cloud-console.com/verify-session?sid=ABC123">https://cloud-console.com/verify-session?sid=ABC123</a><br><br>Session: abc123`, attachments:[], isPhish:true, explanation:`Admin console impersonation—do not enter credentials on emailed links; use the admin console directly.` },
+
+      { id:'e18', from:'Vendor Billing <billing@vendors-payments.com>', to:'you@company.com', date:'2025-11-07 10:05 UTC', subject:'Payment details update required for vendor 7782', body:`${svgLogo('Vendors Payments', '#92400e')}<br><br>Dear Accounts Payable,<br><br>Please update payment account details to avoid failed transfers:<br><br><a href="https://vendors-payments.com/update/7782">https://vendors-payments.com/update/7782</a><br><br>Attachment: bank_change_form.pdf`, attachments:[{name:'bank_change_form.pdf', size:'88 KB'}], isPhish:true, explanation:`Supplier bank change requests must be validated through out-of-band vendor contact and internal change controls.` },
+
+      { id:'e19', from:'Security Team <alerts@auth-service.net>', to:'you@company.com', date:'2025-11-08 06:20 UTC', subject:'Critical: Passwords leaked — force reset required', body:`${svgLogo('Auth Alerts', '#b91c1c')}<br><br>Team,<br><br>We detected a credential leak. Force password reset for all users via the secure portal:<br><br><a href="https://auth-service.net/reset-all?org=COMPANY">https://auth-service.net/reset-all?org=COMPANY</a>`, attachments:[], isPhish:true, explanation:`Mass reset orders via email are suspicious—coordinate with your security team and use internal tools.` },
+
+      { id:'e20', from:'Executive Assist <assist@executive-office.com>', to:'you@company.com', date:'2025-11-09 12:00 UTC', subject:'Wire transfer request — urgent supplier payment', body:`${svgLogo('Executive Office', '#0b1220')}<br><br>Hi,<br><br>Please process an urgent wire to supplier account attached. Approve via the payment portal:<br><br><a href="https://executive-office.com/payments/approve?ref=WT1122">https://executive-office.com/payments/approve?ref=WT1122</a><br><br>Attachment: Payment_Request_INV1122.pdf`, attachments:[{name:'Payment_Request_INV1122.pdf', size:'72 KB'}], isPhish:true, explanation:`Executive impersonation asking for payment approvals—verify by calling the executive assistant or finance lead using known numbers.` }
+    ];
+
+    const STATE = { round: 0, totalRounds: EMAILS.length, score: 0, streak: 0, currentIndex: -1 };
+    let currentEmail = null; // declared before functions
+
+    // UI references will be bound on DOMContentLoaded
+    const UI = {};
+
+    function pickEmailByIndex(index) {
+      return EMAILS[index];
+    }
+
+    function renderAttachments(list) {
+      UI.attachments.innerHTML = '';
+      if (!list || list.length===0) return;
+      for (const a of list) {
+        const el = document.createElement('div');
+        el.className = 'attachment';
+        el.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.5 11.5L12.5 19.5C10.5 21.5 7 21.4 5.1 19.4C3.2 17.4 3 13.9 5 11.9L13 3.9C14.6 2.3 17.4 2.3 18.9 3.9C20.4 5.4 20.4 8.2 18.9 9.8L11 17.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div>${a.name}</div><small>${a.size}</small></div>`;
+        el.addEventListener('click', ()=>{
+          showFloatMessage(`Preview: ${a.name} — simulated (no real download)`);
+        });
+        UI.attachments.appendChild(el);
+      }
+    }
+
+    function displayEmail(email) {
+      UI.emailFrom.textContent = email.from;
+      UI.emailSubject.textContent = email.subject;
+      UI.emailMeta.textContent = `To: ${email.to} | Date: ${email.date}`;
+
+      // Render body as HTML from our trusted local data (keeps links)
+      UI.emailBody.innerHTML = email.body;
+
+      renderAttachments(email.attachments);
+
+      // set up link hover preview
+      const links = UI.emailBody.querySelectorAll('a');
+      if (links.length>0) UI.linkPreview.hidden = false; else UI.linkPreview.hidden = true;
+      UI.linkPreview.textContent = links.length>0 ? 'Hover links to preview target URL below.' : '';
+
+      // add hover handlers
+      links.forEach(a=>{
+        a.addEventListener('mouseenter', ()=>{
+          UI.linkPreview.hidden = false;
+          UI.linkPreview.textContent = `Link target: ${a.href}`;
+        });
+        a.addEventListener('mouseleave', ()=>{
+          UI.linkPreview.textContent = 'Hover links to preview target URL below.';
+        });
+      });
+
+      // hide explanation when new email is shown
+      UI.explain.hidden = true;
+      UI.explain.className = 'explain';
+
+      // disable Next until user chooses to proceed
+      UI.btnNext.disabled = true;
+
+      // show answer buttons (in case they were hidden at end)
+      UI.btnLegit.style.display = '';
+      UI.btnPhish.style.display = '';
+      UI.btnLegit.disabled = false;
+      UI.btnPhish.disabled = false;
+
+      // animate entrance and scroll into view
+      UI.emailView.animate([{opacity:0, transform:'translateY(6px)'},{opacity:1, transform:'none'}],{duration:420,easing:'cubic-bezier(.2,.9,.3,1)'});
+      UI.emailView.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    function updateUI() {
+      UI.score.textContent = STATE.score;
+      UI.streak.textContent = STATE.streak;
+      UI.roundNumber.textContent = STATE.round;
+      UI.totalRounds.textContent = STATE.totalRounds;
+      const pct = Math.max(0, Math.min(100, (STATE.round / STATE.totalRounds) * 100));
+      UI.progFill.style.width = pct + '%';
+    }
+
+    function showFloatMessage(text) {
+      UI.floatMsg.textContent = text;
+      UI.floatMsg.classList.add('show');
+      clearTimeout(UI.floatTimer);
+      UI.floatTimer = setTimeout(()=>UI.floatMsg.classList.remove('show'),1600);
+    }
+
+    function giveFeedback(isCorrect, explanationText) {
+      UI.explain.hidden = false;
+      UI.explain.textContent = explanationText;
+      UI.explain.className = 'explain ' + (isCorrect ? 'good' : 'bad');
+
+      if (isCorrect) {
+        STATE.score += 10;
+        STATE.streak += 1;
+        const messages = ['Nice — +10 points!','Great eye — +10!','Correct! Keep it up!','Excellent — you spotted the trick!'];
+        showFloatMessage(messages[Math.floor(Math.random()*messages.length)]);
+      } else {
+        STATE.score = Math.max(0, STATE.score - 5);
+        STATE.streak = 0;
+        const messages = ['Not this time — -5 points','Careful — look for links and urgency','Good try — review the indicators and try next'];
+        showFloatMessage(messages[Math.floor(Math.random()*messages.length)]);
+      }
+      updateUI();
+
+      // enable Next — user decides when to continue
+      UI.btnNext.disabled = false;
+
+      // disable answer buttons to prevent changing answer after feedback
+      UI.btnLegit.disabled = true;
+      UI.btnPhish.disabled = true;
+    }
+
+    function startSession() {
+      STATE.round = 0; STATE.score = 0; STATE.streak = 0; STATE.currentIndex = -1;
+      STATE.totalRounds = EMAILS.length;
+      updateUI();
+      nextEmail();
+    }
+
+    function nextEmail() {
+      // sequential order
+      if (STATE.currentIndex + 1 >= EMAILS.length) {
+        // session finished
+        STATE.round = STATE.totalRounds; updateUI();
+        UI.emailFrom.textContent = 'Session finished';
+        UI.emailSubject.textContent = `Final score: ${STATE.score}`;
+        UI.emailMeta.textContent = `You answered ${STATE.totalRounds} emails.`;
+        UI.emailBody.innerHTML = `<div style="padding:18px;font-size:16px;line-height:1.6">Great job practicing. Your final score is <strong>${STATE.score}</strong>.<br><br>Review any emails you want and press Restart to play again.</div>`;
+        UI.explain.hidden = false;
+        UI.explain.textContent = `Final score: ${STATE.score} — Best streak: ${STATE.streak}`;
+
+        // <<< REMOVE ATTACHMENTS & LINK PREVIEW AT THE END >>>
+        UI.attachments.innerHTML = '';     // remove any attachment tiles
+        UI.linkPreview.hidden = true;      // hide the link-preview area
+
+        // hide answer buttons at end as requested
+        UI.btnLegit.style.display = 'none';
+        UI.btnPhish.style.display = 'none';
+        UI.btnNext.disabled = true;
+        return;
+      }
+
+      STATE.currentIndex++;
+      STATE.round = STATE.currentIndex + 1; // 1-based round
+      updateUI();
+
+      currentEmail = pickEmailByIndex(STATE.currentIndex);
+      displayEmail(currentEmail);
+    }
+
+    function checkAnswer(answerIsPhish) {
+      if (!currentEmail) return;
+      const correct = currentEmail.isPhish === answerIsPhish;
+      giveFeedback(correct, `Answer: ${currentEmail.isPhish ? 'Phish' : 'Legit'} — ${currentEmail.explanation}`);
+    }
+
+    // --- event handlers for UI controls ---
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // bind UI
+      UI.emailFrom = document.getElementById('emailFrom');
+      UI.emailSubject = document.getElementById('emailSubject');
+      UI.emailMeta = document.getElementById('emailMeta');
+      UI.emailBody = document.getElementById('emailBody');
+      UI.explain = document.getElementById('explain');
+      UI.emailView = document.getElementById('emailView');
+
+      UI.score = document.getElementById('score');
+      UI.streak = document.getElementById('streak');
+      UI.roundNumber = document.getElementById('roundNum');
+      UI.totalRounds = document.getElementById('totalRounds');
+      UI.progFill = document.getElementById('progFill');
+      UI.floatMsg = document.getElementById('floatMsg');
+      UI.attachments = document.getElementById('attachments');
+      UI.linkPreview = document.getElementById('linkPreview');
+
+      UI.btnLegit = document.getElementById('btnLegit');
+      UI.btnPhish = document.getElementById('btnPhish');
+      UI.btnRestart = document.getElementById('btnRestart');
+      UI.btnShowAnswer = document.getElementById('btnShowAnswer');
+      UI.btnNext = document.getElementById('btnNext');
+
+      UI.floatTimer = null;
+
+      UI.btnLegit.addEventListener('click', ()=>checkAnswer(false));
+      UI.btnPhish.addEventListener('click', ()=>checkAnswer(true));
+      UI.btnNext.addEventListener('click', ()=>{ nextEmail(); });
+
+      UI.btnRestart.addEventListener('click', ()=>startSession());
+      UI.btnShowAnswer.addEventListener('click', ()=>{
+        if (!currentEmail) return;
+        UI.explain.hidden = false;
+        UI.explain.className = 'explain ' + (currentEmail.isPhish ? 'bad' : 'good');
+        UI.explain.textContent = `Answer: ${currentEmail.isPhish ? 'Phish' : 'Legit'} — ${currentEmail.explanation}`;
+        UI.btnNext.disabled = false;
+        UI.btnLegit.disabled = true; UI.btnPhish.disabled = true;
+      });
+
+      // init session automatically
+      startSession();
+    });
+  </script>
+</body>
+</html>
